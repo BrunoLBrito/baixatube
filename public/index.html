@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+      integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+   <title>Baixa Tube</title>
+   <style>
+      * {
+         padding: 0;
+         margin: 0;
+         box-sizing: border-box;
+      }
+
+      body {
+         font-family: sans-serif;
+         background-color: #444;
+      }
+
+      form {
+         width: 100%;
+         padding: 10px;
+         display: flex;
+         justify-content: center;
+         gap: .3em;
+      }
+
+      form input {
+         width: 100%;
+         max-width: 500px;
+         padding: 10px;
+         border: 1px solid #ddd;
+         outline: none;
+      }
+
+      form button {
+         padding: 10px;
+         border: none;
+         cursor: pointer;
+         background-color: slateblue;
+         color: #fff;
+         font-weight: bold;
+         outline: none;
+      }
+
+      form .content-btn {
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         column-gap: .3em;
+      }
+
+      form .fa-cog {
+         animation: spin 2s linear infinite;
+      }
+
+      form .fa-cog span {
+         padding: 0px 5px;
+      }
+
+      @keyframes spin {
+         from {
+            transform: rotate(0deg);
+         }
+
+         to {
+            transform: rotate(360deg);
+         }
+      }
+
+      .modal-preview {
+         position: fixed;
+         left: 0;
+         top: 0;
+         /* transform: translate(-50%, -51%); */
+         width: 100%;
+         height: 100vh;
+         background: #222;
+         width: 100%;
+         padding: 10px;
+         display: none;
+         z-index: 100;
+      }
+
+      .modal-preview iframe {
+         width: 100%;
+      }
+
+      .container {
+         width: 100%;
+         padding: 10px;
+         background-color: #444;
+         display: flex;
+         justify-content: center;
+         align-items: stretch;
+         flex-wrap: wrap;
+         gap: .07em;
+
+      }
+
+      .container .box {
+         width: 100%;
+         max-width: 500px;
+         background-color: #222;
+         padding: 10px;
+         cursor: pointer;
+         display: flex;
+         justify-content: center;
+         flex-direction: column;
+      }
+
+      .container .box h2 {
+         color: #fff;
+         font-size: 1em;
+         padding: 20px 0;
+         text-align: center;
+      }
+
+      .container .box .thumbnail {
+         width: 100%;
+         max-width: 500px;
+         position: relative;
+      }
+
+      .container .box .thumbnail img {
+         width: 100%;
+      }
+
+      .container .box span {
+         background-color: #000;
+         color: #fff;
+         padding: 10px;
+         position: absolute;
+         bottom: 10px;
+         right: 10px;
+         border-radius: 10px;
+      }
+
+      .container .box .box-details {
+         /* background-color: #ff0; */
+         display: flex;
+         align-items: center;
+         padding: 10px;
+      }
+
+      .container .box .box-details .thumbnail-channel img {
+         width: 48px;
+         border-radius: 50%;
+      }
+
+      .container .box .box-details .details {
+         margin-left: 20px;
+         color: #fff;
+      }
+
+      .container .box .box-details .details p:nth-child(1) {
+         font-weight: bold;
+      }
+
+      .preview {
+         width: 100%;
+         max-width: 560px;
+         margin: 0px auto;
+         background: #fff;
+         text-align: center;
+         padding: 10px;
+         display: block;
+         margin-bottom: 20px;
+      }
+
+      .preview .fa-times-circle {
+         font-size: 2em;
+         margin-bottom: 15px;
+         color: crimson;
+         cursor: pointer;
+      }
+
+      .preview h1 {
+         font-size: 1em;
+      }
+
+      .preview iframe {
+         width: 100%;
+         margin: 15px 0;
+      }
+
+      .preview img {
+         max-width: 100%;
+         margin: 15px 0;
+      }
+
+      .preview .rating {
+         margin: 15px auto;
+         /* background-color: #f00; */
+         /* width: 50%; */
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         color: #aaa;
+         padding: 10px;
+         font-size: .9em !important;
+      }
+
+      .preview .rating div>i {
+         margin: 5px;
+      }
+
+      .preview i {
+         font-size: 1.1em;
+         display: block;
+      }
+
+      .preview .views {
+         color: #aaa;
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         column-gap: .2em;
+         padding: 10px;
+      }
+
+      .preview .views span {
+         display: block;
+         font-size: .9em;
+      }
+
+      .preview .channel {
+         display: flex;
+         /* background-color: #ddd; */
+         justify-content: center;
+         align-items: center;
+         column-gap: 1em;
+      }
+
+      .preview .channel img {
+         border-radius: 50%;
+         width: 50px;
+      }
+
+      .preview .channel .description-channel {
+         display: flex;
+         flex-direction: column;
+         justify-content: baseline;
+         align-items: baseline;
+      }
+
+      .preview .channel .description-channel .name-channel {
+         font-weight: bold;
+      }
+
+      .preview .channel .description-channel .subscribers-channel {
+         font-size: 13px;
+         color: #aaa;
+      }
+
+      .preview .btn-download {
+         margin-top: 5px;
+         width: 100%;
+         background-color: #3ea6ff;
+         border: none;
+         outline: none;
+         cursor: pointer;
+         padding: 10px;
+         font-weight: bold;
+         color: #fff;
+      }
+
+      .preview .btn-download:last-child {
+         background-color: rgb(98, 198, 70);
+      }
+   </style>
+</head>
+
+<body>
+
+   <div class="modal-preview">
+      <div class="preview"></div>
+   </div>
+
+   <form>
+      <input type="text" placeholder="Pesquisar" required>
+      <button type="submit" class="btn-search">Pesquisar</button>
+   </form>
+
+   <div class="container"></div>
+
+   <script>
+
+      const form = document.querySelector('form')
+      const modalPreview = document.querySelector('.modal-preview')
+      const previewVideo = document.querySelector('.preview')
+      const btnSearch = document.querySelector('.btn-search')
+
+      const baseURL = location.origin
+
+      form.addEventListener('submit', async e => {
+         e.preventDefault()
+
+         const inputValue = document.querySelector('form input')
+         const container = document.querySelector('.container')
+
+         btnSearch.innerHTML = '<div class="content-btn"><i class="fas fa-cog"></i><span>Buscando...</span></div>'
+
+         let accValue
+
+         try {
+            const response = await fetch(`${baseURL}/search?key=${inputValue.value}`)
+            const result = await response.json()
+
+            console.log(result)
+
+            const preview = result.items.map(video => {
+
+               if (video.bestThumbnail && video.type === 'video') {
+                  return (
+                     `
+                     <div class="box" onclick="playOnVideo('${video.id}')">
+
+                        <h2>${video.title}</h2>
+
+                        <div class="thumbnail">
+                           <img loading="lazy" src="${video.bestThumbnail.url}" alt="${video.title}" alt="${video.title}">
+                           <span>${video.duration}</span>
+                        </div>
+
+                        <div class="box-details">
+                           <div class="thumbnail-channel">
+                              <img
+                                 src="${video.author.bestAvatar.url}"
+                                 alt="${video.author.name}">
+                           </div>
+
+                           <div class="details">
+                              <p>${video.author.name}</p>
+                              <p style="color: #aaa">${video.views ? video.views.toLocaleString('pt-BR') + ' visualizações' : ''}</p>
+                              <p style="color: #aaa; font-size: .9em">${video.uploadedAt ? video.uploadedAt : ''}</p>
+                           </div>
+                        </div>
+                     </div>
+                  `
+                  )
+               }
+            }).join('')
+
+            btnSearch.innerHTML = 'Pesquisar'
+            container.innerHTML = preview
+
+         } catch (err) {
+            btnSearch.innerHTML = 'Pesquisar'
+            alert('Erro no servidor! Contact admin (BrunoL)')
+            console.error(err)
+         }
+      })
+
+      async function playOnVideo(idVideo) {
+
+         try {
+
+            const response = await fetch(`${baseURL}/convert?url=${idVideo}`)
+            const result = await response.json()
+
+            // window.history.pushState('Object', 'Categoria JavaScript', './details.html')
+            // console.log(result)
+            modalPreview.style.display = 'block'
+            document.body.style.overflow = 'hidden'
+            previewVideo.innerHTML = `
+               <i class="fas fa-times-circle" onclick={closeModal()}></i>
+               <h1>${result.videoDetails.title}</h1>
+
+               ${itagVideo(result, idVideo)}
+               ${itagAudio(result, idVideo)}
+               
+               <iframe  height="300" class="iframe-preview" src="${result.videoDetails.embed ? result.videoDetails.embed.iframeUrl : result.videoDetails.thumbnails[3].url}?autoplay=1" title="${result.videoDetails.title}"
+               frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+               allowfullscreen></iframe>
+
+               <div class="views">
+                  <span><i class="far fa-eye" style="margin-bottom: 5px"></i> ${parseInt(result.videoDetails.viewCount).toLocaleString('pt-BR')} Visualizações</span>
+                  <span><i class="far fa-calendar-alt" style="margin-bottom: 5px"></i> Publicado em ${new Date(result.videoDetails.publishDate.replace(/-/g, '\/')).toLocaleDateString('pt-BR', { dateStyle: 'medium' })}</span>
+               </div>
+
+               <div class="rating">
+                  <div class="clock">
+                     <i class="far fa-clock"></i> <span>${convertDuration(parseInt(result.videoDetails.lengthSeconds))}</span>
+                  </div>
+                  <div class="like">
+                     <i class="fas fa-thumbs-up"></i> <span>${parseInt(result.videoDetails.likes).toLocaleString('pt-BR')}</span>
+                  </div>
+                  <div class="dislike">
+                     <i class="fas fa-thumbs-down"></i> <span>${parseInt(result.videoDetails.dislikes).toLocaleString('pt-BR')}</span>
+                  </div>
+               </div>
+
+               <div class="channel">
+                  <div class="logo-channel">
+                     <img
+                        src="${result.videoDetails.author.thumbnails[2].url}"
+                        alt="${result.videoDetails.author.name}" alt="${result.videoDetails.author.name}">
+                  </div>
+
+                  <div class="description-channel">
+                     <p class="name-channel">${result.videoDetails.author.name}</p>
+                     <p class="subscribers-channel">${parseInt(result.videoDetails.author.subscriber_count).toLocaleString('pt-BR')} de inscritos</p>
+                  </div>
+
+               </div>
+               
+            `
+
+            console.log(result)
+         } catch (err) {
+            alert('Erro no servidor! Contact admin (BrunoL)')
+            console.error(err)
+         }
+      }
+
+      function closeModal() {
+         modalPreview.style.display = 'none'
+         document.body.style.overflow = 'auto'
+         document.querySelector('.iframe-preview').src = ""
+      }
+
+      function itagAudio(result, idVideo) {
+         return (
+            result.formats.map(format => {
+               if (format.itag === 251) {
+                  return `<button class="btn-download" onclick="downloadAudio('${idVideo}')">Baixar Áudio (${(parseInt((format.contentLength)) / 1024 / 1024).toFixed(2)}MB) MP3</button>`
+               }
+            }).join(' ')
+         )
+      }
+
+      function itagVideo(result, idVideo) {
+         return (
+            result.formats.map(format => {
+               if (format.container == 'mp4') {
+                  if (format.qualityLabel != null && format.audioBitrate != null) {
+                     return `<button class="btn-download" onclick="downloadVideo('${format.itag}', '${idVideo}')">Baixar Video (${(parseInt((format.contentLength)) / 1024 / 1024).toFixed(2)}MB) ${format.container.toUpperCase()}</button>`
+                  }
+               }
+            }).join(' ')
+         )
+      }
+
+
+      function convertDuration(secs) {
+         let hor = Math.floor(secs / 60 / 60) % 60
+         let min = Math.floor(secs / 60) % 60
+         let sec = secs % 60
+
+         hor = hor < 10 ? "0" + hor : hor
+         min = min < 10 ? "0" + min : min
+         sec = sec < 10 ? '0' + sec : sec
+
+         return `${hor}:${min}:${sec}`
+      }
+
+      function downloadVideo(itag, idVideo) {
+
+         const fetchApi = async () => {
+            const response = await fetch(`${baseURL}/download-video?url=${idVideo}&itag=${itag}`)
+
+            var a = document.createElement('a');
+            a.href = `${baseURL}/download-video?url=${idVideo}&itag=${itag}`
+            a.setAttribute('download', '');
+            a.click();
+         }
+         fetchApi()
+      }
+
+      function downloadAudio(idVideo) {
+
+         const fetchApi = async () => {
+            const response = await fetch(`${baseURL}/download-audio?url=${idVideo}`)
+
+            var a = document.createElement('a');
+            a.href = `${baseURL}/download-audio?url=${idVideo}`
+            a.setAttribute('download', '');
+            a.click();
+         }
+         fetchApi()
+      }
+
+   </script>
+</body>
+
+</html>

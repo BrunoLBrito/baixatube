@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Download Youtube</title>
+   <meta name="theme-color" content="#ffffff" />
+   <link rel="manifest" href="manifest.json">
+   <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+      integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+   <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+
+   <form>
+      <span class="info-alert"></span>
+
+      <div class="box">
+         <input autocomplete="off" type="text" placeholder="Digite o link do video" id="input-url" required>
+
+         <button type="submit" id="btn-convert">Buscar</button>
+      </div>
+   </form>
+
+   <div class="preview"></div>
+   <!-- <iframe  height="250" src="${result.videoDetails.embed.iframeUrl}" title="${result.videoDetails.title}"
+               frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+               allowfullscreen></iframe> -->
+
+   <!-- <img src='${result.videoDetails.thumbnails[result.videoDetails.thumbnails.length - 1].url}' alt="${result.videoDetails.title}" title="${result.videoDetails.title}" /> -->
+
+   <script>
+
+      'use strict'
+
+      if ('serviceWorker' in navigator) {
+         window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+               .then(register => console.log('ServiceWorker registration successful'))
+               .catch(err => console.log('Falha ao registrar o Service Worker', err))
+         })
+
+         navigator.bluetooth.requestDevice({
+            acceptAllDevices: true
+         }).then(device => console.log(device))
+      } else {
+         alert('Seu browser não é compativel com o Service Worker')
+      }
+
+      const form = document.querySelector('form')
+      const span = document.querySelector('span')
+      const ancor = document.querySelector('#link-download')
+      const preview = document.querySelector('.preview')
+      const infoAlert = document.querySelector('.info-alert')
+      const btnConvert = document.querySelector('#btn-convert')
+
+      let baseUrl = location.origin
+
+      form.addEventListener('submit', e => {
+         e.preventDefault()
+
+         let link = document.querySelector('#input-url')
+
+         const fetchApi = async () => {
+            const options = {
+               headers: { "Content-Type": "application/json" },
+               method: 'POST',
+               body: JSON.stringify({ url: link.value })
+            }
+
+            btnConvert.innerHTML = '<div class="content-btn"><i class="fas fa-cog"></i><span>Buscando...</span></div>'
+            const response = await fetch(`${baseUrl}/convert`, options)
+            const result = await response.json()
+            btnConvert.innerHTML = 'Buscar'
+
+            console.log(result)
+
+            preview.style.display = 'block'
+
+            // if (!new RegExp(/youtube.com\/watch\?/).test(link.value) && !new RegExp(/youtu\.be/).test(link.value)) {
+            //    infoAlert.style.display = 'block'
+            //    infoAlert.innerHTML = 'Link inválido!'
+
+            //    return
+            // }
+
+            infoAlert.style.display = 'none'
+
+            preview.innerHTML = `
+               <h1>${result.videoDetails.title}</h1>
+               
+               <iframe  height="250" src="${result.videoDetails.embed.iframeUrl}" title="${result.videoDetails.title}"
+               frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+               allowfullscreen></iframe>
+
+               <div class="views">
+                  <i class="far fa-eye"></i> <span>${parseInt(result.videoDetails.viewCount).toLocaleString('pt-BR')} Visualizações</span>
+               </div>
+
+               <div class="rating">
+                  <div class="clock">
+                     <i class="far fa-clock"></i> <span>${convertDuration(parseInt(result.videoDetails.lengthSeconds))}</span>
+                  </div>
+                  <div class="like">
+                     <i class="fas fa-thumbs-up"></i> <span>${parseInt(result.videoDetails.likes).toLocaleString('pt-BR')}</span>
+                  </div>
+                  <div class="dislike">
+                     <i class="fas fa-thumbs-down"></i> <span>${parseInt(result.videoDetails.dislikes).toLocaleString('pt-BR')}</span>
+                  </div>
+               </div>
+
+               <div class="channel">
+                  <div class="logo-channel">
+                     <img
+                        src="${result.videoDetails.author.thumbnails[2].url}"
+                        alt="${result.videoDetails.author.name}" alt="${result.videoDetails.author.name}">
+                  </div>
+
+                  <div class="description-channel">
+                     <p class="name-channel">${result.videoDetails.author.name}</p>
+                     <p class="subscribers-channel">${parseInt(result.videoDetails.author.subscriber_count).toLocaleString('pt-BR')} de inscritos</p>
+                  </div>
+
+               </div>
+
+               ${itagVideo(result)}
+               ${itagAudio(result)}
+               
+            `
+
+            // console.log(result)
+         }
+         fetchApi()
+
+      })
+
+      function itagAudio(result) {
+         return (
+            result.formats.map(format => {
+               if (format.itag === 251) {
+                  return `<button class="btn-download" onclick="downloadAudio()">Baixar Áudio (${(parseInt((format.contentLength)) / 1024 / 1024).toFixed(2)}MB) MP3</button>`
+               }
+            }).join(' ')
+         )
+      }
+
+      function itagVideo(result) {
+         return (
+            result.formats.map(format => {
+               if (format.container == 'mp4') {
+                  if (format.qualityLabel != null && format.audioBitrate != null) {
+                     return `<button class="btn-download" onclick="downloadVideo('${format.itag}')">Baixar Video (${(parseInt((format.contentLength)) / 1024 / 1024).toFixed(2)}MB) ${format.container.toUpperCase()}</button>`
+                  }
+               }
+            }).join(' ')
+         )
+      }
+
+
+      function convertDuration(secs) {
+         let hor = Math.floor(secs / 60 / 60) % 60
+         let min = Math.floor(secs / 60) % 60
+         let sec = secs % 60
+
+         hor = hor < 10 ? "0" + hor : hor
+         min = min < 10 ? "0" + min : min
+         sec = sec < 10 ? '0' + sec : sec
+
+         return `${hor}:${min}:${sec}`
+      }
+
+      function downloadVideo(itag) {
+         let link = document.querySelector('#input-url')
+
+         const fetchApi = async () => {
+            const response = await fetch(`${baseUrl}/download-video?url=${link.value}&itag=${itag}`)
+
+            var a = document.createElement('a');
+            a.href = `${baseUrl}/download-video?url=${link.value}&itag=${itag}`
+            a.setAttribute('download', '');
+            a.click();
+         }
+         fetchApi()
+      }
+
+      function downloadAudio() {
+         let link = document.querySelector('#input-url')
+
+         const fetchApi = async () => {
+            const response = await fetch(`${baseUrl}/download-audio?url=${link.value}`)
+
+            var a = document.createElement('a');
+            a.href = `${baseUrl}/download-audio?url=${link.value}`
+            a.setAttribute('download', '');
+            a.click();
+         }
+         fetchApi()
+      }
+
+   </script>
+</body>
+
+</html>
